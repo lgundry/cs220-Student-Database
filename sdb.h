@@ -2,6 +2,8 @@
 #include "studentNode.h"
 #include <string>
 
+using namespace std;
+
 class studentNode;
 
 class SDB {

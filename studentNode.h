@@ -1,6 +1,7 @@
 #pragma once
 #include "sdb.h"
 #include <iostream>
+#include <string>
 
 using namespace std;
 

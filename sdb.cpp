@@ -1,4 +1,6 @@
 #include "sdb.h"
+#include <string>
+using namespace std;
 
 // constructor
 SDB::SDB() {
