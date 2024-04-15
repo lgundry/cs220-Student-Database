@@ -24,8 +24,8 @@ int main(int argc, char const *argv[])
                 break;
             }
         }
-        for (int i = delimOne; i < command.size(); i++) {
-            bool nameSpace = false;
+        bool nameSpace = false;
+        for (int i = delimOne + 1; i < command.size(); i++) {
             if (command[i] == ' ') {
                 if (nameSpace) {
                     delimTwo = i;
@@ -34,10 +34,17 @@ int main(int argc, char const *argv[])
                 nameSpace = true;
             }
         }
-
-        action = command.substr(0, delimOne);
-        name = command.substr(delimOne + 1, delimTwo - delimOne - 1);
-        grade = command.substr(delimTwo + 1, command.size() - delimTwo - 1);
+        if (delimOne == 0) {
+            action = command;
+            if (action == "EXIT") {
+                break;
+            }
+        }
+        else {
+            action = command.substr(0, delimOne);
+            name = command.substr(delimOne + 1, delimTwo - delimOne - 1);
+            grade = command.substr(delimTwo + 1, command.size() - delimTwo - 1);
+        }
 
         // ADD "Student Name" "Student Grade"
         // The Student Name is just what it sounds like: last name then comma then space then first

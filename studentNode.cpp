@@ -14,8 +14,10 @@ studentNode::studentNode(string newName, string newGrade, SDB* aDB) {
 	parent = nullptr;
 	leftChild = nullptr;
 	rightChild = nullptr;
-	
-	height = 0;
+	name = newName;
+	grade = newGrade;
+	myDB = aDB;
+	height = 1;
 }
 
 // add leaf
@@ -62,6 +64,16 @@ void studentNode::addLeaf(string newName, string newGrade, SDB* aDB) {
 			rightChild->changeParent(this);
 		}
 	}
+	if (leftChild && rightChild && leftChild->height > rightChild->height)
+		height = leftChild->height + 1;
+	else if (leftChild && rightChild && leftChild->height < rightChild->height)
+		height = rightChild->height + 1;
+	else if (leftChild)
+		height = leftChild->height + 1;
+	else if (rightChild)
+		height = rightChild->height + 1;
+	else
+		height = 1;
 }
 
 // change parent
