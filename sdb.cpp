@@ -1,38 +1,38 @@
-#include "binaryTree.h"
+#include "sdb.h"
 
 // constructor
-binaryTree::binaryTree() {
+SDB::SDB() {
 	root = nullptr;
 }
 
 // destructor
-binaryTree::~binaryTree() {
+SDB::~SDB() {
 	delete root;
 	root = nullptr;
 }
 
 // print
-void binaryTree::print() {
+void SDB::print() {
 	root->print();
 }
 
 // add leaf
-void binaryTree::addLeaf(int leafValue) {
+void SDB::addLeaf(string newName, string newGrade) {
 	if (!root)
-		root = new treeNode(leafValue);
+		root = new studentNode(newName, newGrade, this);
 	else
-		root->addLeaf(leafValue);
+		root->addLeaf(newName, newGrade, this);
 }
 
 // search
-bool binaryTree::search(int searchValue) {
+bool SDB::search(string searchValue) {
 	if (!root)return false;
 	return (root->search(searchValue)!=nullptr);
 }
 
 // remove
-bool binaryTree::remove(int valueToRemove) {
-	treeNode* temp = privateSearch(valueToRemove);
+bool SDB::remove(string valueToRemove) {
+	studentNode* temp = privateSearch(valueToRemove);
 	if (!temp)return false;
 
 	temp->remove(root);
@@ -40,12 +40,49 @@ bool binaryTree::remove(int valueToRemove) {
 }
 
 // private version of search
-treeNode* binaryTree::privateSearch(int searchValue) {
+studentNode* SDB::privateSearch(string searchValue) {
 	if (!root)return nullptr;
 	return root->search(searchValue);
 }
 
 // facy form of print
-void binaryTree::display() {
+void SDB::display() {
 	root->display(root, 0);
+}
+
+bool SDB::isEmpty() {
+	return !root;
+}
+
+string SDB::getFirst() {
+	if (!root) return "";
+	return root->getFirst()->getName();
+}
+string SDB::getNext(string key) {
+	if (!root) return "";
+	studentNode* temp = root->search(key);
+	if (!temp)return "";
+	return temp->getNext()->getName();
+}
+string SDB::getPrev(string key) {
+	if (!root) return "";
+	studentNode* temp = root->search(key);
+	if (!temp)return "";
+	return temp->getPrev()->getName();
+}
+string SDB::getLast() {
+	if (!root) return "";
+	return root->getLast()->getName();
+}
+string SDB::findLastBefore(string key) {
+	if (!root) return "";
+	studentNode* temp = root->search(key);
+	if (temp) return temp->getName();
+	return temp->findLastBefore(key)->getName();
+}
+string SDB::findFirstAfter(string key) {
+	if (!root) return "";
+	studentNode* temp = root->search(key);
+	if (temp) return temp->getName();
+	return temp->findFirstAfter(key)->getName();
 }
