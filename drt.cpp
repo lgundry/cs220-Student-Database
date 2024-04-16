@@ -17,7 +17,7 @@ DRT::~DRT() {
 }
 
 bool DRT::search(string key) {
-    if (key == "" && !myDB->search(key)) {
+    if (key == "" && !myDB->search(key)) { // key is empty and does not exist in the database
         data = "";
         if (myDB->isEmpty()) {
             next = "";
@@ -29,7 +29,7 @@ bool DRT::search(string key) {
         }
         return true;
     }
-    else if (!myDB->search(key)) {
+    else if (!myDB->search(key)) { // key does not exist in the database
         data = "";
         if (myDB->isEmpty()) {
             next = "";
@@ -41,8 +41,8 @@ bool DRT::search(string key) {
         }
         return true;
     }
-    else {
-        data = myDB->privateSearch(key)->getName();
+    else { // key exists in the database
+        data = key;
         next = myDB->getNext(key);
         prev = myDB->getPrev(key);
         return true;
@@ -50,7 +50,21 @@ bool DRT::search(string key) {
     return false;
 }
 
-bool DRT::modify(string key, string data) {
-    return true;
+DRT* DRT::modify(string key, string data) {
+    if (key != "" && !myDB->search(key) && data != "") {
+        myDB->addLeaf(key, data);
+        return this;
+    }
+    else if (key != "" && myDB->search(key) && data == "") {
+        myDB->remove(key);
+        return this;
+    }
+    else if (key != "" && myDB->search(key) && data != "") {
+        myDB->modify(key, data);
+        return this;
+    }
+    else {
+        return nullptr;
+    }
 }
 

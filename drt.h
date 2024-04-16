@@ -16,5 +16,5 @@ public:
     DRT(SDB* aDB);
     ~DRT();
     bool search(string key);
-    bool modify(string key, string data);
+    DRT* modify(string key, string data);
 };
