@@ -1,17 +1,19 @@
 #pragma once
 #include "studentNode.h"
+#include "drt.h"
 #include <string>
 
 using namespace std;
 
 class studentNode;
+class DRT;
 
 class SDB {
 private:
 	friend class studentNode;
-	friend class DRT;
 
 	studentNode* root;
+	DRT *myDRT;
 
 	studentNode* privateSearch(string searchValue);
 
@@ -21,7 +23,8 @@ public:
 	void display();
 	void addLeaf(string newName, string newGrade);
 	void print();
-	bool search(string searchValue);
+	bool editNode(string key, string data);
+	bool oldSearch(string searchValue);
 	bool remove(string valueToRemove);
 	bool isEmpty();
 	string getFirst();
@@ -30,4 +33,6 @@ public:
 	string getLast();
 	string findLastBefore(string key);
 	string findFirstAfter(string key);
+	DRT* search(string key);
+	DRT *modify(string key, string data);
 };

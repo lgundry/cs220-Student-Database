@@ -25,18 +25,20 @@ void studentNode::addLeaf(string newName, string newGrade, SDB* aDB) {
 	if (newName < name) {
 		if (leftChild) {
 			leftChild->addLeaf(newName, newGrade, aDB);
-			if (leftChild->height - rightChild->height > 1) {
+			if (rightChild && leftChild->height - rightChild->height > 1) {
 				if (leftChild->leftChild->height < leftChild->rightChild->height)
 					rotateLR(leftChild, this);
 				else
 					rotateRight(leftChild, this);
 			}
-			else if (rightChild->height = leftChild->height > 1) {
+			else if (rightChild && rightChild->height - leftChild->height > 1) {
 				if (rightChild->rightChild->height < rightChild->leftChild->height)
 					rotateRL(rightChild, this);
 				else
 					rotateLeft(rightChild, this);
 			}
+			else if (!rightChild && leftChild->height > 1)
+				rotateRight(leftChild, this);
 		}
 		else {
 			leftChild = new studentNode(newName, newGrade, aDB);
@@ -46,18 +48,20 @@ void studentNode::addLeaf(string newName, string newGrade, SDB* aDB) {
 	else {
 		if (rightChild) {
 			rightChild->addLeaf(newName, newGrade, aDB);
-			if (rightChild->height - leftChild->height > 1) {
-				if (rightChild->rightChild->height < rightChild->leftChild->height)
+			if (leftChild && rightChild->height - leftChild->height > 1) {
+				if (leftChild && rightChild->rightChild->height < rightChild->leftChild->height)
 					rotateRL(rightChild, this);
 				else
 					rotateLeft(rightChild, this);
 			}
-			else if (leftChild->height - rightChild->height > 1) {
+			else if (leftChild && leftChild && leftChild->height - rightChild->height > 1) {
 				if (leftChild->leftChild->height < leftChild->rightChild->height)
 					rotateLR(leftChild, this);
 				else
 					rotateRight(leftChild, this);
 			}
+			else if (!leftChild && rightChild->height > 1)
+				rotateLeft(rightChild, this);
 		}
 		else {
 			rightChild = new studentNode(newName, newGrade, aDB);
@@ -320,4 +324,15 @@ studentNode* studentNode::findLastBefore(string key) {
 	}
 	if (!leftChild) return nullptr;
 	return leftChild->findLastBefore(key);
+}
+
+void studentNode::modify(string key, string newGrade) {
+	if (key == name)
+		grade = newGrade;
+	else if (key < name)
+		leftChild->modify(key, newGrade);
+	else if (key > name)
+		rightChild->modify(key, newGrade);
+	else
+		cout << "Error modifying node " + name << endl;
 }

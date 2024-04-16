@@ -28,6 +28,7 @@ private:
 
 public:
 	void addLeaf(string newName, string newGrade, SDB* aDB);
+	void modify(string key, string grade);
 	void print();
 	studentNode* search(string searchValue);
 	void remove(studentNode* &root);

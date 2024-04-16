@@ -10,14 +10,22 @@ DRT::DRT(SDB* aDB) {
     prev = "";
 }
 
+// make a drt copy
+DRT::DRT(DRT *aDRT) {
+    myDB = aDRT->myDB;
+    data = aDRT->data;
+    next = aDRT->next;
+    prev = aDRT->prev;
+}
+
 DRT::~DRT() {
     data = "";
     next = "";
     prev = "";
 }
 
-bool DRT::search(string key) {
-    if (key == "" && !myDB->search(key)) { // key is empty and does not exist in the database
+void DRT::search(string key) {
+    if (key == "" && !myDB->oldSearch(key)) { // key is empty and does not exist in the database
         data = "";
         if (myDB->isEmpty()) {
             next = "";
@@ -27,9 +35,8 @@ bool DRT::search(string key) {
             next = myDB->getFirst();
             prev = myDB->getLast();
         }
-        return true;
     }
-    else if (!myDB->search(key)) { // key does not exist in the database
+    else if (!myDB->oldSearch(key)) { // key does not exist in the database
         data = "";
         if (myDB->isEmpty()) {
             next = "";
@@ -39,32 +46,19 @@ bool DRT::search(string key) {
             next = myDB->findFirstAfter(key);
             prev = myDB->findLastBefore(key);
         }
-        return true;
     }
     else { // key exists in the database
         data = key;
         next = myDB->getNext(key);
         prev = myDB->getPrev(key);
-        return true;
-    }
-    return false;
-}
-
-DRT* DRT::modify(string key, string data) {
-    if (key != "" && !myDB->search(key) && data != "") {
-        myDB->addLeaf(key, data);
-        return this;
-    }
-    else if (key != "" && myDB->search(key) && data == "") {
-        myDB->remove(key);
-        return this;
-    }
-    else if (key != "" && myDB->search(key) && data != "") {
-        myDB->modify(key, data);
-        return this;
-    }
-    else {
-        return nullptr;
     }
 }
-
+string DRT::getData() {
+    return data;
+}
+string DRT::getNext() {
+    return next;
+}
+string DRT::getPrev() {
+    return prev;
+}

@@ -14,7 +14,10 @@ private:
 
 public:
     DRT(SDB* aDB);
+    DRT(DRT *aDRT);
     ~DRT();
-    bool search(string key);
-    DRT* modify(string key, string data);
+    void search(string key);
+    string getData();
+    string getPrev();
+    string getNext();
 };
