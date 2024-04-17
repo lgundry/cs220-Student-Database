@@ -1,15 +1,15 @@
 #include "studentNode.h"
+using namespace std;
 
-// basic constructor
 studentNode::studentNode() {
 	parent = nullptr;
 	leftChild = nullptr;
 	rightChild = nullptr;
 	name = "";
 	grade = "";
+	height = 1;
 }
 
-// constructor
 studentNode::studentNode(string newName, string newGrade, SDB* aDB) {
 	parent = nullptr;
 	leftChild = nullptr;
@@ -19,92 +19,80 @@ studentNode::studentNode(string newName, string newGrade, SDB* aDB) {
 	myDB = aDB;
 	height = 1;
 }
-
-// add leaf
+// TODO: Add rotations and replace data if newName == name
 void studentNode::addLeaf(string newName, string newGrade, SDB* aDB) {
-	if (newName < name) {
-		if (leftChild) {
+	if (newName == name) { // if they are the same, replace data and exit
+		grade = newGrade;
+		return;
+	}
+
+	if (newName < name) { // unchanged
+		if (leftChild)
 			leftChild->addLeaf(newName, newGrade, aDB);
-			if (rightChild && leftChild->height - rightChild->height > 1) {
-				if (leftChild->leftChild->height < leftChild->rightChild->height)
-					rotateLR(leftChild, this);
-				else
-					rotateRight(leftChild, this);
-			}
-			else if (rightChild && rightChild->height - leftChild->height > 1) {
-				if (rightChild->rightChild->height < rightChild->leftChild->height)
-					rotateRL(rightChild, this);
-				else
-					rotateLeft(rightChild, this);
-			}
-			else if (!rightChild && leftChild->height > 1)
-				rotateRight(leftChild, this);
-		}
 		else {
 			leftChild = new studentNode(newName, newGrade, aDB);
 			leftChild->changeParent(this);
 		}
 	}
 	else {
-		if (rightChild) {
+		if (rightChild)
 			rightChild->addLeaf(newName, newGrade, aDB);
-			if (leftChild && rightChild->height - leftChild->height > 1) {
-				if (leftChild && rightChild->rightChild->height < rightChild->leftChild->height)
-					rotateRL(rightChild, this);
-				else
-					rotateLeft(rightChild, this);
-			}
-			else if (leftChild && leftChild && leftChild->height - rightChild->height > 1) {
-				if (leftChild->leftChild->height < leftChild->rightChild->height)
-					rotateLR(leftChild, this);
-				else
-					rotateRight(leftChild, this);
-			}
-			else if (!leftChild && rightChild->height > 1)
-				rotateLeft(rightChild, this);
-		}
 		else {
 			rightChild = new studentNode(newName, newGrade, aDB);
 			rightChild->changeParent(this);
 		}
 	}
-	if (leftChild && rightChild && leftChild->height > rightChild->height)
-		height = leftChild->height + 1;
-	else if (leftChild && rightChild && leftChild->height < rightChild->height)
-		height = rightChild->height + 1;
-	else if (leftChild)
-		height = leftChild->height + 1;
-	else if (rightChild)
-		height = rightChild->height + 1;
+
+	// set heights
+	int leftHeight = maxHeight(leftChild);
+	int rightHeight = maxHeight(rightChild);
+	if (leftHeight > rightHeight)
+		height = leftHeight;
 	else
-		height = 1;
+		height = rightHeight;
+
+	// Balance
+	if (leftChild && rightChild) {
+		int dif = leftChild->height - rightChild->height;
+		// The difference should never be more than 2 - if less than 2, no need to rotate
+		switch(dif) {
+			case 2: // leftChild is greater
+				if (leftChild->leftChild >= leftChild->rightChild)
+					rotateRight(leftChild, this);
+				else
+					rotateLR(leftChild->rightChild, leftChild, this);
+			case -2: // rightChild is greater
+				if (rightChild->rightChild >= rightChild->leftChild)
+					rotateLeft(rightChild, this);
+				else
+					rotateRL(rightChild->leftChild, rightChild, this);
+		}
+	}
+	else {
+		if (rightChild && rightChild->height > 1)
+			rotateLeft(rightChild, this);
+		if (leftChild && leftChild->height > 1)
+			rotateRight(leftChild, this);
+	}
 }
 
-// change parent
 void studentNode::changeParent(studentNode* newParent) {
 	parent = newParent;
 }
-
-// change left child
 void studentNode::changeLeftChild(studentNode* newLeftChild) {
 	leftChild = newLeftChild;
 }
-
-// change right child
 void studentNode::changeRightChild(studentNode* newRightChild) {
 	rightChild = newRightChild;
 }
-
-// print the tree - linear
 void studentNode::print() {
 	if (leftChild)
 		leftChild->print();
-	cout << name + " " + grade << " ";
+	cout << name + ": " + grade << endl;
 	if (rightChild)
 		rightChild->print();
 }
 
-// destructor
 studentNode::~studentNode() {
 	delete leftChild;
 	leftChild = nullptr;
@@ -114,18 +102,17 @@ studentNode::~studentNode() {
 	parent = nullptr;
 }
 
-// search the tree for searchValue
-studentNode* studentNode::search(string searchValue) {
-	if (name == searchValue)return this;
-	if (searchValue < name) {
+studentNode* studentNode::search(string key) {
+	
+	if (name == key)return this;
+	if (key < name) {
 		if (!leftChild)return nullptr;
-		return leftChild->search(searchValue);
+		return leftChild->search(key);
 	}
 	if (!rightChild)return nullptr;
-	return rightChild->search(searchValue);
+	return rightChild->search(key);
 }
 
-// remove the node
 void studentNode::remove(studentNode* &root) {
 
 	if (leftChild) {
@@ -190,10 +177,9 @@ void studentNode::remove(studentNode* &root) {
 	delete this;
 }
 
-// fancy print - displays the tree in tree form
 void studentNode::display(studentNode* aNode, int positionNumber) {
 	if (aNode) {
-		cout << aNode->name + " " + aNode->grade<< endl;
+		cout << aNode->name + ": " + aNode->grade << endl;
 		if (aNode->rightChild == nullptr && aNode->leftChild == nullptr)
 			return;
 		cout << '|';
@@ -209,25 +195,109 @@ void studentNode::display(studentNode* aNode, int positionNumber) {
 	}
 	else
 		cout << '\b'<<endl;
-
 }
 
-int studentNode::maxHeight(studentNode* aNode) {
-	if (!aNode)return 0;
-	int leftHeight = maxHeight(aNode->leftChild);
-	int rightHeight = maxHeight(aNode->rightChild);
-	if (leftHeight > rightHeight)
-		return leftHeight + 1;
-	else
-		return rightHeight + 1;
-	return 0;
+string studentNode::getName() {
+	return name;
+}
+string studentNode::getGrade() {
+	return grade;
+}
+studentNode *studentNode::getFirst() {
+	studentNode *temp = myDB->root;
+	while (temp->leftChild)
+		temp = temp->leftChild;
+	return temp;
+}
+studentNode *studentNode::getPrev() {
+	studentNode *prev;
+	if (!parent || this == parent->leftChild) {
+		// root case & left child case
+		prev = leftChild;
+		while (prev->rightChild)
+			prev = prev->rightChild;
+		return prev;
+	}
+	else {
+		// right child case
+		if (leftChild) {
+			prev = leftChild;
+			while (prev->rightChild)
+				prev = prev->rightChild;
+			return prev;
+		}
+		else
+			return parent;
+	}
+}
+studentNode *studentNode::getNext() {
+	studentNode *next;
+	if (!parent || this == parent->rightChild) {
+		// root case & left child case
+		next = rightChild;
+		while (next->leftChild)
+			next = next->leftChild;
+		return next;
+	}
+	else {
+		// right child case
+		if (rightChild) {
+			next = rightChild;
+			while (next->leftChild)
+				next = next->leftChild;
+			return next;
+		}
+		else
+			return parent;
+	}
+}
+studentNode *studentNode::getLast() {
+	studentNode *temp = myDB->root;
+	while (temp->rightChild)
+		temp = temp->rightChild;
+	return temp;
 }
 
-// rotations
-void studentNode::rotateRight(studentNode* pNode, studentNode* gpNode) {
-	studentNode* pNodeRC = pNode->rightChild;
+string studentNode::getLastBefore(string key) {
+	studentNode *temp = myDB->root;
+	while (!false) {
+		while (key > temp->getName()) {
+			if (temp->rightChild)
+				temp = temp->rightChild;
+			else
+				return temp->getName();
+		}
+		while (key < temp->getName()) {
+			if (temp->leftChild)
+				temp = temp->leftChild;
+			else
+				return "";
+		}
+	}
+}
+string studentNode::getFirstAfter(string key) {
+	studentNode *temp = myDB->root;
+	while (!false) {
+		while (key > temp->getName()) {
+			if (temp->rightChild)
+				temp = temp->rightChild;
+			else
+				return "";
+		}
+		while (key < temp->getName()) {
+			if (temp->leftChild)
+				temp = temp->leftChild;
+			else
+				return temp->getName();
+		}
+	}
+}
+
+// AVL Specific
+void studentNode::rotateRight(studentNode *pNode, studentNode *gpNode) {
+	studentNode *pNodeRC = pNode->rightChild;
 	pNode->rightChild = gpNode;
-	studentNode* gpNodeP = gpNode->parent;
+	studentNode *gpNodeP = gpNode->parent;
 	gpNode->parent = pNode;
 	pNode->parent = gpNodeP;
 	gpNode->leftChild = pNodeRC;
@@ -239,18 +309,15 @@ void studentNode::rotateRight(studentNode* pNode, studentNode* gpNode) {
 		else
 			gpNodeP->rightChild = pNode;
 	}
-	else {
-		myDB->root = pNode;
-	}
-	pNode->height = maxHeight(pNode->leftChild);
-	gpNode->height = maxHeight(gpNode->rightChild);
 	gpNodeP = nullptr;
 	pNodeRC = nullptr;
+	pNode->height = maxHeight(pNode->leftChild);
+	gpNode->height = maxHeight(pNode->leftChild);
 }
-void studentNode::rotateLeft(studentNode* pNode, studentNode* gpNode) {
-	studentNode* pNodeLC = pNode->leftChild;
+void studentNode::rotateLeft(studentNode *pNode, studentNode *gpNode) {
+	studentNode *pNodeLC = pNode->leftChild;
 	pNode->leftChild = gpNode;
-	studentNode* gpNodeP = gpNode->parent;
+	studentNode *gpNodeP = gpNode->parent;
 	gpNode->parent = pNode;
 	pNode->parent = gpNodeP;
 	gpNode->rightChild = pNodeLC;
@@ -265,74 +332,29 @@ void studentNode::rotateLeft(studentNode* pNode, studentNode* gpNode) {
 	else {
 		myDB->root = pNode;
 	}
-	pNode->height = maxHeight(pNode->rightChild);
-	gpNode->height = maxHeight(gpNode->leftChild);
 	gpNodeP = nullptr;
 	pNodeLC = nullptr;
+	pNode->height = maxHeight(pNode->rightChild);
+	gpNode->height = maxHeight(pNode->rightChild);
 }
-void studentNode::rotateLR(studentNode* pNode, studentNode* gpNode) {
-	rotateLeft(pNode, pNode->rightChild);
-	rotateRight(pNode->parent, gpNode);
+void studentNode::rotateRL(studentNode *cNode, studentNode *pNode, studentNode *gpNode) {
+	rotateRight(pNode, cNode);
+	rotateLeft(gpNode, cNode);
 }
-void studentNode::rotateRL(studentNode* pNode, studentNode* gpNode) {
-	rotateRight(pNode, pNode->leftChild);
-	rotateLeft(pNode->parent, gpNode);
+void studentNode::rotateLR(studentNode *cNode, studentNode *pNode, studentNode *gpNode) {
+	rotateLeft(pNode, cNode);
+	rotateRight(gpNode, cNode);
 }
-
-string studentNode::getName() {
-	return name;
-}
-
-string studentNode::getGrade() {
-	return grade;
-}
-
-studentNode* studentNode::getFirst() {
-	if (!leftChild) return this;
-	return leftChild->getFirst();
-}
-studentNode* studentNode::getNext() {
-	if (this == parent->leftChild) return parent;
-	if (!rightChild) return nullptr;
-	studentNode* temp = rightChild;
-	while (temp->leftChild) temp = temp->leftChild;
-	return temp;
-}
-studentNode* studentNode::getPrev() {
-	if (this == parent->rightChild) return parent;
-	if (!leftChild) return nullptr;
-	studentNode* temp = leftChild;
-	while (temp->rightChild) temp = temp->rightChild;
-	return temp;
-}
-studentNode* studentNode::getLast() {
-	if (!rightChild) return this;
-	return rightChild->getLast();
-}
-studentNode* studentNode::findFirstAfter(string key) {
-	if (key < name) {
-		if (!leftChild) return this;
-		return leftChild->findFirstAfter(key);
+int studentNode::maxHeight(studentNode *aNode) { // adjust heights
+	if (!aNode)
+		return 1;
+	else {
+		int leftHeight = maxHeight(aNode->leftChild);
+		int rightHeight = maxHeight(aNode->rightChild);
+		if (leftHeight > rightHeight)
+			return leftHeight + 1;
+		else {
+			return rightHeight + 1;
+		}
 	}
-	if (!rightChild) return nullptr;
-	return rightChild->findFirstAfter(key);
-}
-studentNode* studentNode::findLastBefore(string key) {
-	if (key > name) {
-		if (!rightChild) return this;
-		return rightChild->findLastBefore(key);
-	}
-	if (!leftChild) return nullptr;
-	return leftChild->findLastBefore(key);
-}
-
-void studentNode::modify(string key, string newGrade) {
-	if (key == name)
-		grade = newGrade;
-	else if (key < name)
-		leftChild->modify(key, newGrade);
-	else if (key > name)
-		rightChild->modify(key, newGrade);
-	else
-		cout << "Error modifying node " + name << endl;
 }

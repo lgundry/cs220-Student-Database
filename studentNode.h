@@ -1,47 +1,44 @@
 #pragma once
-#include "sdb.h"
+#include "SDB.H"
 #include <iostream>
 #include <string>
-
 using namespace std;
 
 class SDB;
 
 class studentNode {
 private:
-
-	string name, grade;
-	int height;
 	studentNode* parent;
 	studentNode* leftChild;
 	studentNode* rightChild;
-	SDB* myDB;
-
+	string name, grade;
+	int height;
+	SDB *myDB;
 	void changeParent(studentNode* newParent);
 	void changeLeftChild(studentNode* newLeftChild);
 	void changeRightChild(studentNode* newRightChild);
-	int maxHeight(studentNode* aNode);
-	void rotateRight(studentNode* pNode, studentNode* gpNode);
-	void rotateLeft(studentNode* pNode, studentNode* gpNode);
-	void rotateLR(studentNode* pNode, studentNode* gpNode);
-	void rotateRL(studentNode* pNode, studentNode* gpNode);
-
 public:
-	void addLeaf(string newName, string newGrade, SDB* aDB);
-	void modify(string key, string grade);
-	void print();
-	studentNode* search(string searchValue);
-	void remove(studentNode* &root);
 	studentNode();
 	studentNode(string newName, string newGrade, SDB* aDB);
-	void display(studentNode* aNode, int positionNumber);
 	~studentNode();
+	void addLeaf(string newName, string newGrade, SDB* aDB);
+	void remove(studentNode* &root);
+	studentNode* search(string key);
+	void print();
+	void display(studentNode* aNode, int positionNumber);
 	string getName();
 	string getGrade();
-	studentNode* getFirst();
-	studentNode* getNext();
-	studentNode* getPrev();
-	studentNode* getLast();	
-	studentNode* findFirstAfter(string key);
-	studentNode* findLastBefore(string key);
+	studentNode *getFirst();
+	studentNode *getPrev();
+	studentNode *getNext();
+	studentNode *getLast();
+	string getLastBefore(string key);
+	string getFirstAfter(string key); 
+
+	// AVL Specific
+	void rotateRight(studentNode *pNode, studentNode *gpNode);
+	void rotateLeft(studentNode *pNode, studentNode *gpNode);
+	void rotateRL(studentNode *cNode, studentNode *pNode, studentNode *gpNode);
+	void rotateLR(studentNode *cNode, studentNode *pNode, studentNode *gpNode);
+	int maxHeight(studentNode *aNode);
 };

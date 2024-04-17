@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
-#include "drt.h"
+#include "DRT.h"
+#include "SDB.h"
 using namespace std;
 
 void getParts(string command, string &action, string &key, string &data)
@@ -41,10 +42,6 @@ void getParts(string command, string &action, string &key, string &data)
     }
 }
 
-void print(SDB *myDB) {
-    myDB->search("");
-}
-
 int main(int argc, char const *argv[])
 {
     cout << "Welcome to the student database. Your command options are as follows:\n"
@@ -80,8 +77,8 @@ int main(int argc, char const *argv[])
 
         // PRINT
         // This will print all student names and grades, in alphabetical order.
-        if (action == "PRINT")
-            print(myDB);
+        // if (action == "PRINT")
+        //     print(myDB);
 
         // RPRINT
         // This will print all student names and grades, in reverse alphabetical order.

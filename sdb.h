@@ -1,38 +1,29 @@
 #pragma once
 #include "studentNode.h"
-#include "drt.h"
-#include <string>
+#include "DRT.h"
 
-using namespace std;
-
-class studentNode;
 class DRT;
 
 class SDB {
 private:
 	friend class studentNode;
-
 	studentNode* root;
 	DRT *myDRT;
 
-	studentNode* privateSearch(string searchValue);
+	studentNode* privateSearch(string key);
+	string getFirst();
+	string getLast();
+	string getLastBefore(string key);
+	string getFirstAfter(string key);
 
 public:
 	SDB();
 	~SDB();
-	void display();
-	void addLeaf(string newName, string newGrade);
+	void addLeaf(string newname, string newGrade, SDB* aDB);
 	void print();
-	bool editNode(string key, string data);
-	bool oldSearch(string searchValue);
+	void display();
 	bool remove(string valueToRemove);
-	bool isEmpty();
-	string getFirst();
-	string getNext(string key);
-	string getPrev(string key);
-	string getLast();
-	string findLastBefore(string key);
-	string findFirstAfter(string key);
+
 	DRT* search(string key);
 	DRT *modify(string key, string data);
 };

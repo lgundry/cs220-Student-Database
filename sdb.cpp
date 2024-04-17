@@ -1,15 +1,11 @@
-#include "sdb.h"
-#include <string>
-using namespace std;
+#include "SDB.h"
 
-// constructor
 SDB::SDB()
 {
 	root = nullptr;
-	myDRT = new DRT(this);
+	myDRT = new DRT();
 }
 
-// destructor
 SDB::~SDB()
 {
 	delete root;
@@ -18,30 +14,17 @@ SDB::~SDB()
 	myDRT = nullptr;
 }
 
-// print
 void SDB::print()
 {
 	root->print();
 }
-
-// add leaf
-void SDB::addLeaf(string newName, string newGrade)
+void SDB::addLeaf(string newName, string newGrade, SDB *aDB)
 {
 	if (!root)
-		root = new studentNode(newName, newGrade, this);
+		root = new studentNode(newName, newGrade, aDB);
 	else
-		root->addLeaf(newName, newGrade, this);
+		root->addLeaf(newName, newGrade, aDB);
 }
-
-// search
-bool SDB::oldSearch(string searchValue)
-{
-	if (!root)
-		return false;
-	return (root->search(searchValue) != nullptr);
-}
-
-// remove
 bool SDB::remove(string valueToRemove)
 {
 	studentNode *temp = privateSearch(valueToRemove);
@@ -51,112 +34,110 @@ bool SDB::remove(string valueToRemove)
 	temp->remove(root);
 	return true;
 }
-
-// private version of search
 studentNode *SDB::privateSearch(string searchValue)
 {
 	if (!root)
 		return nullptr;
 	return root->search(searchValue);
 }
-
-// facy form of print
 void SDB::display()
 {
 	root->display(root, 0);
 }
-
-bool SDB::isEmpty()
-{
-	return !root;
+string SDB::getFirst(){
+	studentNode *temp = root->getFirst();
+	return temp->getName();
+}
+string SDB::getLast() {
+	studentNode *temp = root->getFirst();
+	return temp->getName();
 }
 
-string SDB::getFirst()
-{
-	DRT* tempDRT = search("");
-	string ans = myDRT->getNext();
-	myDRT = tempDRT;
-	return ans;
+string SDB::getLastBefore(string key) {
+	return root->getLastBefore(key);
 }
-string SDB::getNext(string key)
-{
-	return myDRT->getNext();
-}
-string SDB::getPrev(string key)
-{
-	return myDRT->getPrev();
-}
-string SDB::getLast()
-{
-	DRT *tempDRT = search("");
-	string ans = myDRT->getPrev();
-	myDRT = tempDRT;
-	return ans;
-}
-string findFirstAfter(string key) {
-
-}
-string findLastBefore(string key) {
-	
-}
-bool SDB::editNode(string key, string data)
-{
-	if (root->search(key))
-	{
-		root->modify(key, data);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
+string SDB::getFirstAfter(string key) {
+	return root->getFirstAfter(key);
 }
 
-// search database for key
-DRT* SDB::search(string key)
+DRT *SDB::search(string key)
 {
+	if (!root) return nullptr;
+
 	DRT *tempDRT = myDRT;
-	myDRT = new DRT(this);
-	myDRT->search(key);
+	string data = "", next = "", prev = "";
+	// if key is "", then set the following fields in the Data Retrieval Tool (DRT):
+	// data = ""
+	// next = the first key in the database (or "" if empty)
+	// prev = the last key in the database (or "" if empty)
+	if (key == "") {
+		data = "";
+		next = getFirst();
+		prev = getLast();
+	}
+
+	// if key is not "" but is not present in the database:
+	// data = ""
+	// next = the first key in the database following key (or "")
+	// prev = the last key in the database preceding key (or "")
+	else if (!root->search(key)) {
+		data = "";
+		next = getFirstAfter(key);
+		prev = getLastBefore(key);
+	}
+
+	// if key is present in the database:
+	// data = the data corresponding to key
+	// next = the first key in the database following key (or "")
+	// prev = the last key in the database preceding key (or "")
+	else {
+		studentNode *temp = root->search(key);
+		data = temp->getGrade();
+		next = temp->getNext()->getName();
+		prev = temp->getPrev()->getName();
+	}
+	myDRT = new DRT(data, next, prev);
 	return tempDRT;
 }
 
 DRT *SDB::modify(string key, string data)
 {
-	// 	At all times, modify returns the DRT that search would have returned
+	DRT *tempDRT;
+	// At all times, modify returns the DRT that search would have returned
 	// JUST PRIOR to the modification made by modify. Discussed below are
 	// the modifications made by modify.
-	DRT *tempDRT = myDRT;
-	DRT *myDRT = new DRT(this);
-
+	
 	// if key is "", do nothing.
 	if (key == "")
-		return tempDRT;
+		return myDRT;
 
 	// if key is not "" but not present in the database and data is "", do
 	// nothing.
-	if (search(key)->getData() == "" && data == "") {
-		return tempDRT;
-	}
+	if (search(key)->getData() != key && data == "")
+		return myDRT;
 
 	// if key is not "" but not present in the database and data is not "",
 	// add <key,data> to the database.
-	else if (search(key)->getData() == "" && data != "") {
-		addLeaf(key, data);
+	if (search(key)->getData() != key && data != "") {
+		addLeaf(key, data, this);
+		tempDRT = myDRT;
+		myDRT = search(tempDRT->getData());
 		return tempDRT;
 	}
 	// if key is present in the database and data is "", remove key from the
 	// database.
-	else if (search(key)->getData() != "" && data == "") {
-		studentNode *toRemove = privateSearch(key);
-		toRemove->remove(root);
+	if (data == "") {
+		remove(key);
+		tempDRT = myDRT;
+		myDRT = search(tempDRT->getData());
 		return tempDRT;
 	}
+
 	// if key is present in the database and data is not "", replace the data
 	// associated with key with the new data.
-	else if (search(key)->getData() != "" && data != "") {
-		editNode(key, data);
-		return tempDRT;
+	if (data != "") {
+		addLeaf(key, data, this);
+		return myDRT;
 	}
-	return tempDRT;
+	return myDRT;
 }

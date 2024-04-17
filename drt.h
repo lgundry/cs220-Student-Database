@@ -1,23 +1,16 @@
 #pragma once
-#include "sdb.h"
-#include <string>
 #include <iostream>
+#include <string>
 using namespace std;
 
-class SDB;
-
-// Data Retrieval System
 class DRT {
 private:
-    SDB* myDB;
     string data, next, prev;
-
 public:
-    DRT(SDB* aDB);
-    DRT(DRT *aDRT);
+    DRT();
+    DRT(string newData, string newNext, string newPrev);
     ~DRT();
-    void search(string key);
     string getData();
-    string getPrev();
     string getNext();
+    string getPrev();
 };
