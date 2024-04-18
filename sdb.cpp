@@ -62,9 +62,7 @@ string SDB::getFirstAfter(string key) {
 
 DRT *SDB::search(string key)
 {
-	if (!root) return nullptr;
-
-	DRT *tempDRT = myDRT;
+	if (!root) return myDRT;
 	string data = "", next = "", prev = "";
 	// if key is "", then set the following fields in the Data Retrieval Tool (DRT):
 	// data = ""
@@ -93,11 +91,17 @@ DRT *SDB::search(string key)
 	else {
 		studentNode *temp = root->search(key);
 		data = temp->getGrade();
-		next = temp->getNext()->getName();
-		prev = temp->getPrev()->getName();
+		if (temp->getNext())
+			next = temp->getNext()->getName();
+		else
+			next = "";
+		if (temp->getPrev())
+			prev = temp->getPrev()->getName();
+		else 
+			prev = "";
 	}
 	myDRT = new DRT(data, next, prev);
-	return tempDRT;
+	return myDRT;
 }
 
 DRT *SDB::modify(string key, string data)
@@ -120,16 +124,14 @@ DRT *SDB::modify(string key, string data)
 	// add <key,data> to the database.
 	if (search(key)->getData() != key && data != "") {
 		addLeaf(key, data, this);
-		tempDRT = myDRT;
-		myDRT = search(tempDRT->getData());
+		tempDRT = search(key);
 		return tempDRT;
 	}
 	// if key is present in the database and data is "", remove key from the
 	// database.
 	if (data == "") {
 		remove(key);
-		tempDRT = myDRT;
-		myDRT = search(tempDRT->getData());
+		tempDRT = search(key);
 		return tempDRT;
 	}
 

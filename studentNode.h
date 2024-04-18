@@ -36,6 +36,7 @@ public:
 	string getFirstAfter(string key); 
 
 	// AVL Specific
+	int chooseMove(studentNode *aNode); // 0 = left, 1 = right, 2 = rl, 3 = lr
 	void rotateRight(studentNode *pNode, studentNode *gpNode);
 	void rotateLeft(studentNode *pNode, studentNode *gpNode);
 	void rotateRL(studentNode *cNode, studentNode *pNode, studentNode *gpNode);

@@ -42,6 +42,35 @@ void getParts(string command, string &action, string &key, string &data)
     }
 }
 
+void print(SDB *myDB)
+{
+    DRT* temp = myDB->search("");
+    cout << temp->getNext() << endl;
+    while (temp = myDB->search(temp->getNext()))
+    {
+        if (temp->getNext() == "")
+            break;
+        cout << temp->getNext() << endl;
+    }
+}
+
+void rprint(SDB *myDB)
+{
+    DRT* temp = myDB->search("");
+    cout << temp->getPrev() << endl;
+    while (temp = myDB->search(temp->getPrev()))
+    {
+        if (temp->getPrev() == "")
+            break;
+        cout << temp->getPrev() << endl;
+    }
+}
+
+void display(SDB *myDB)
+{
+    
+}
+
 int main(int argc, char const *argv[])
 {
     cout << "Welcome to the student database. Your command options are as follows:\n"
@@ -77,22 +106,57 @@ int main(int argc, char const *argv[])
 
         // PRINT
         // This will print all student names and grades, in alphabetical order.
-        // if (action == "PRINT")
-        //     print(myDB);
+        if (action == "PRINT")
+            print(myDB);
 
         // RPRINT
         // This will print all student names and grades, in reverse alphabetical order.
+        if (action == "RPRINT")
+            rprint(myDB);
+
+        // DISPLAY
+        // This will print all students names and grades in tree format.
+        if (action == "DISPLAY")
+            display(myDB);
 
         // REMOVE "Student Name"
         // Removes the student with the given name. If the student doesn't exist, the program prints
         // an error message.
+        if (action == "REMOVE")
+        {
+            myDB->modify(name, "");
+            if (myDB->search(name)->getData() == "")
+            {
+                cout << "Successfully removed " + name + " from the database" << endl;
+            }
+            else
+            {
+                cout << "Failed to remove " + name + " from the database" << endl;
+            }
+        }
 
         // LOOKUP "Student Name"
         // Prints the grade associated with that name. If that student does not exist, it prints out the
         // Students’ Names that occur before and after the requested one.
+        if (action == "LOOKUP")
+        {
+            DRT *tempDRT = myDB->search(name);
+            if (tempDRT->getData() == "")
+            {
+                cout << "Student not found" << endl;
+                cout << "The student before " + name + " is " + tempDRT->getPrev() << endl;
+                cout << "The student after " + name + " is " + tempDRT->getNext() << endl;
+            }
+            else
+            {
+                cout << "The grade for " + name + " is " + tempDRT->getData() << endl;
+            }
+        }
 
         // EXIT
         // The program terminates.
+        if (action == "EXIT")
+            break;
     }
     delete myDB;
     return 0;
