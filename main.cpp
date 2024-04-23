@@ -1,3 +1,4 @@
+// Logan Gundry
 #include <iostream>
 #include <string>
 #include "DRT.h"
@@ -42,39 +43,40 @@ void getParts(string command, string &action, string &key, string &data)
     }
 }
 
+// I cannot figure out for the life of me why these methods (print and rprint) don't work. I looked at my search and finder methods to no avail.
 void print(SDB *myDB)
 {
     DRT* temp = myDB->search("");
-    cout << temp->getNext() << endl;
-    while (temp = myDB->search(temp->getNext()))
-    {
-        if (temp->getNext() == "")
-            break;
-        cout << temp->getNext() << endl;
+    if (temp->getNext() == "" && temp->getPrev() == "") {
+        cout << "No students in the database" << endl;
+        return;
     }
+    do {
+        cout << temp->getNext() << endl;
+    } while ((temp = myDB->search(temp->getNext()))->getNext() != "");
 }
-
 void rprint(SDB *myDB)
 {
     DRT* temp = myDB->search("");
-    cout << temp->getPrev() << endl;
-    while (temp = myDB->search(temp->getPrev()))
-    {
-        if (temp->getPrev() == "")
-            break;
-        cout << temp->getPrev() << endl;
+    if (temp->getNext() == "" && temp->getPrev() == "") {
+        cout << "No students in the database" << endl;
+        return;
     }
-}
-
-void display(SDB *myDB)
-{
-    
+    do {
+        cout << temp->getPrev() << endl;
+    } while ((temp = myDB->search(temp->getPrev()))->getPrev() != "");
 }
 
 int main(int argc, char const *argv[])
 {
     cout << "Welcome to the student database. Your command options are as follows:\n"
-         << "ADD <student name> <grade>\n"
+         << "ADD <student name> <grade> | add a student to the database\n"
+         << "REMOVE <student name> | remove a student from the database\n"
+         << "LOOKUP <student name> | Look up a student's grade or check if an entry exists\n"
+         << "PRINT | print all students in the database in alphabetical order\n"
+         << "RPRINT | print all students in the database in reverse alphabetical order\n"
+         << "EXIT | exit the program\n"
+         << "HELP | display this list of commands\n"
          << endl;
 
     SDB *myDB = new SDB();
@@ -106,23 +108,18 @@ int main(int argc, char const *argv[])
 
         // PRINT
         // This will print all student names and grades, in alphabetical order.
-        if (action == "PRINT")
+        else if (action == "PRINT")
             print(myDB);
 
         // RPRINT
         // This will print all student names and grades, in reverse alphabetical order.
-        if (action == "RPRINT")
+        else if (action == "RPRINT")
             rprint(myDB);
-
-        // DISPLAY
-        // This will print all students names and grades in tree format.
-        if (action == "DISPLAY")
-            display(myDB);
 
         // REMOVE "Student Name"
         // Removes the student with the given name. If the student doesn't exist, the program prints
         // an error message.
-        if (action == "REMOVE")
+        else if (action == "REMOVE")
         {
             myDB->modify(name, "");
             if (myDB->search(name)->getData() == "")
@@ -138,14 +135,18 @@ int main(int argc, char const *argv[])
         // LOOKUP "Student Name"
         // Prints the grade associated with that name. If that student does not exist, it prints out the
         // Students’ Names that occur before and after the requested one.
-        if (action == "LOOKUP")
+        else if (action == "LOOKUP")
         {
             DRT *tempDRT = myDB->search(name);
             if (tempDRT->getData() == "")
             {
                 cout << "Student not found" << endl;
-                cout << "The student before " + name + " is " + tempDRT->getPrev() << endl;
-                cout << "The student after " + name + " is " + tempDRT->getNext() << endl;
+                if (tempDRT->getPrev() != "")
+                    cout << "The student before " + name + " is " + tempDRT->getPrev() << endl;
+                else cout << "There is no student before " + name << endl;
+                if (tempDRT->getNext() != "")
+                    cout << "The student after " + name + " is " + tempDRT->getNext() << endl;
+                else cout << "There is no student after " + name << endl;
             }
             else
             {
@@ -155,8 +156,23 @@ int main(int argc, char const *argv[])
 
         // EXIT
         // The program terminates.
-        if (action == "EXIT")
+        else if (action == "EXIT")
             break;
+
+        else if (action == "HELP") {
+            cout << "Your command options are as follows:\n"
+                 << "ADD <student name> <grade> | add a student to the database\n"
+                 << "REMOVE <student name> | remove a student from the database\n"
+                 << "LOOKUP <student name> | Look up a student's grade or check if an entry exists\n"
+                 << "PRINT | print all students in the database in alphabetical order\n"
+                 << "RPRINT | print all students in the database in reverse alphabetical order\n"
+                 << "EXIT | exit the program\n"
+                 << "HELP | display this list of commands\n"
+                 << endl;
+        }
+        
+        else
+            cout << "Invalid command. Try HELP for a list of commands" << endl;
     }
     delete myDB;
     return 0;

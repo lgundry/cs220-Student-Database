@@ -108,23 +108,74 @@ studentNode::~studentNode()
 
 studentNode *studentNode::search(string key)
 {
-
-	if (name == key)
-		return this;
-	if (key < name)
-	{
-		if (!leftChild)
-			return nullptr;
-		return leftChild->search(key);
+	if (key == name) return this;
+	if (key < name) {
+		if (leftChild)
+			return leftChild->search(key);
 	}
-	if (!rightChild)
-		return nullptr;
-	return rightChild->search(key);
+	if (key > name) {
+		if (rightChild)
+			return rightChild->search(key);
+	}
+	return nullptr;
 }
 
-void studentNode::remove(studentNode *&root)
+void studentNode::remove(string key) {
+	if (key < name) {
+		if (leftChild){
+			leftChild->remove(key);
+			switch(chooseMove(this)) {
+				case 0:
+					break;
+				case 1:
+					rotateLeft(this->rightChild, this);
+					break;
+				case 2:
+					rotateRight(this->leftChild, this);
+							break;
+				case 3:
+					rotateRL(this->rightChild->leftChild, this->rightChild, this);
+					break;
+				case 4:
+					rotateLR(this->leftChild->rightChild, this->leftChild, this);
+					break;
+			}
+			height = maxHeight(this);
+		}
+		else 
+			return;
+	}
+	else if (key > name) {
+		if (rightChild){
+			rightChild->remove(key);
+			switch(chooseMove(this)) {
+				case 0:
+					break;
+				case 1:
+					rotateLeft(this->rightChild, this);
+					break;
+				case 2:
+					rotateRight(this->leftChild, this);
+							break;
+				case 3:
+					rotateRL(this->rightChild->leftChild, this->rightChild, this);
+					break;
+				case 4:
+					rotateLR(this->leftChild->rightChild, this->leftChild, this);
+					break;
+			}
+			height = maxHeight(this);
+		}
+		else 
+			return;
+	}
+	else {
+		oldRemove(myDB->root);
+	}
+}
+
+void studentNode::oldRemove(studentNode *&root)
 {
-	studentNode *nodeToRotate = nullptr;
 	if (leftChild)
 	{
 		leftChild->parent = this->parent;
@@ -148,21 +199,16 @@ void studentNode::remove(studentNode *&root)
 
 			if (parent->rightChild == this) { // fails if root
 				parent->rightChild = leftChild;
-				nodeToRotate = parent->rightChild;
 			}
 			else {
 				parent->leftChild = leftChild;
-				nodeToRotate = parent->leftChild;
 			}
-			parent->height = maxHeight(parent);
 		}
 		else
 		{
 			root = leftChild;
-			nodeToRotate = root;
 			if (leftChild)
 				leftChild->parent = nullptr;
-			root->height = maxHeight(root);
 		}
 		parent = nullptr;
 		leftChild = nullptr;
@@ -175,21 +221,16 @@ void studentNode::remove(studentNode *&root)
 		{
 			if (parent->rightChild == this) {
 				parent->rightChild = leftChild;
-				nodeToRotate = parent->rightChild;
 			}
 			else {
 				parent->leftChild = leftChild;
-				nodeToRotate = parent->leftChild;
 			}
-			parent->height = maxHeight(parent);
 		}
 		else
 		{
 			root = rightChild;
-			nodeToRotate = root;
 			if (rightChild)
 				rightChild->parent = nullptr;
-			root->height = maxHeight(root);
 		}
 		parent = nullptr;
 		rightChild = nullptr;
@@ -198,7 +239,6 @@ void studentNode::remove(studentNode *&root)
 	{
 		if (parent)
 		{
-			nodeToRotate = parent;
 			if (parent->rightChild == this)
 				parent->rightChild = nullptr;
 			else
@@ -208,27 +248,6 @@ void studentNode::remove(studentNode *&root)
 			root = nullptr;
 		parent = nullptr;
 	}
-
-	// Balance the tree - using a wack algorithm I made up
-	switch (chooseMove(nodeToRotate))
-	{
-	case 0: // no move
-		break;
-	case 1:
-		rotateLeft(nodeToRotate->rightChild, nodeToRotate);
-		break;
-	case 2:
-		rotateRight(nodeToRotate->leftChild, nodeToRotate);
-		break;
-	case 3:
-		rotateRL(nodeToRotate->rightChild->leftChild, nodeToRotate->rightChild, nodeToRotate);
-		break;
-	case 4:
-		rotateLR(nodeToRotate->leftChild->rightChild, nodeToRotate->leftChild, nodeToRotate);
-		break;
-	}
-
-
 
 	delete this;
 }
@@ -272,55 +291,39 @@ studentNode *studentNode::getFirst()
 }
 studentNode *studentNode::getPrev()
 {
-	studentNode *prev = nullptr;
-	if (!parent || this == parent->leftChild)
-	{
-		// root case & left child case
-		prev = leftChild;
-		if (prev)
-			while (prev->rightChild)
-				prev = prev->rightChild;
-		return prev;
+	studentNode *prevChild = nullptr;
+	if (leftChild){
+		prevChild = leftChild;
+		while (prevChild->rightChild)
+			prevChild = prevChild->rightChild;
+		return prevChild;
 	}
-	else
-	{
-		// right child case
-		if (leftChild)
-		{
-			prev = leftChild;
-			while (prev->rightChild)
-				prev = prev->rightChild;
-			return prev;
-		}
-		else
-			return parent;
-	}
+	if (parent && this == parent->rightChild) return parent;
+	
+	studentNode *prevParent = parent;
+	while (prevParent && prevParent->parent && prevParent == prevParent->parent->leftChild)
+		prevParent = prevParent->parent;
+	if (prevParent && prevParent->parent) return prevParent->parent;
+
+	return nullptr;
 }
 studentNode *studentNode::getNext()
 {
-	studentNode *next = nullptr;
-	if (!parent || this == parent->rightChild)
-	{
-		// root case & left child case
-		next = rightChild;
-		if (next)
-			while (next->leftChild)
-				next = next->leftChild;
-		return next;
+	studentNode *nextChild = nullptr;
+	if (rightChild){
+		nextChild = rightChild;
+		while (nextChild->leftChild)
+			nextChild = nextChild->leftChild;
+		return nextChild;
 	}
-	else
-	{
-		// right child case
-		if (rightChild)
-		{
-			next = rightChild;
-			while (next->leftChild)
-				next = next->leftChild;
-			return next;
-		}
-		else
-			return parent;
-	}
+	if (parent && this == parent->leftChild) return parent;
+	
+	studentNode *nextParent = parent;
+	while (nextParent && nextParent->parent && nextParent == nextParent->parent->rightChild)
+		nextParent = nextParent->parent;
+	if (nextParent && nextParent->parent) return nextParent->parent;
+
+	return nullptr;
 }
 studentNode *studentNode::getLast()
 {
@@ -378,6 +381,8 @@ string studentNode::getFirstAfter(string key)
 // Choose a move: 0 = no move, 1 = left, 2 = right, 3 = rl, 4 = lr
 int studentNode::chooseMove(studentNode *aNode)
 {
+	if (!aNode)
+		return 0;
 	// Explaination: 00 = RL, 11 = LR, 01 = right, 10 = left
 	bool leftRotate = false;  // if flipped, move contains a left rotation
 	bool rightRotate = false; // if flipped, move contains a right rotation
@@ -406,6 +411,7 @@ int studentNode::chooseMove(studentNode *aNode)
 	studentNode *temp = aNode;
 	for (int i = 0; i < 2; i++)
 	{
+		if (!temp) return 0;
 		if (temp->leftChild)
 		{
 			if (temp->rightChild)

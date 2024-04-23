@@ -27,12 +27,11 @@ void SDB::addLeaf(string newName, string newGrade, SDB *aDB)
 }
 bool SDB::remove(string valueToRemove)
 {
-	studentNode *temp = privateSearch(valueToRemove);
-	if (!temp)
-		return false;
-
-	temp->remove(root);
-	return true;
+	if (search(valueToRemove)->getData() != ""){
+		root->remove(valueToRemove);
+		return true;
+	}
+	return false;
 }
 studentNode *SDB::privateSearch(string searchValue)
 {
@@ -49,7 +48,7 @@ string SDB::getFirst(){
 	return temp->getName();
 }
 string SDB::getLast() {
-	studentNode *temp = root->getFirst();
+	studentNode *temp = root->getLast();
 	return temp->getName();
 }
 
@@ -62,7 +61,7 @@ string SDB::getFirstAfter(string key) {
 
 DRT *SDB::search(string key)
 {
-	if (!root) return myDRT;
+	if (!root) return new DRT();
 	string data = "", next = "", prev = "";
 	// if key is "", then set the following fields in the Data Retrieval Tool (DRT):
 	// data = ""
@@ -117,7 +116,7 @@ DRT *SDB::modify(string key, string data)
 
 	// if key is not "" but not present in the database and data is "", do
 	// nothing.
-	if (search(key)->getData() != key && data == "")
+	if (search(key)->getData() == "" && data == "")
 		return myDRT;
 
 	// if key is not "" but not present in the database and data is not "",

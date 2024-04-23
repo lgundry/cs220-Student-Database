@@ -22,7 +22,8 @@ public:
 	studentNode(string newName, string newGrade, SDB* aDB);
 	~studentNode();
 	void addLeaf(string newName, string newGrade, SDB* aDB);
-	void remove(studentNode* &root);
+	void oldRemove(studentNode* &root);
+	void remove(string key);
 	studentNode* search(string key);
 	void print();
 	void display(studentNode* aNode, int positionNumber);
